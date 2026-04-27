@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. TXNSTATUS.
        AUTHOR. SEVEN-DEADLY-SYNCS.
 
@@ -28,21 +28,18 @@
        01  WS-EOF-FLAG             PIC X VALUE "N".
        01  WS-JSON-OUTPUT          PIC X(1000).
 
+       *> Buffer for raw file read
+       01  WS-TXN-RAW-RECORD       PIC X(300).
+
+       *> Removed FILLERs for UNSTRING
        01  WS-TXN-PARSE.
            05  WS-TP-TXN-ID        PIC X(36).
-           05  FILLER              PIC X(1).
            05  WS-TP-USER-ID       PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-TP-MERCHANT-ID   PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-TP-AMOUNT        PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-TP-STATUS        PIC X(10).
-           05  FILLER              PIC X(1).
            05  WS-TP-TYPE          PIC X(10).
-           05  FILLER              PIC X(1).
            05  WS-TP-QR-CODE       PIC X(100).
-           05  FILLER              PIC X(1).
            05  WS-TP-CREATED-AT    PIC X(20).
 
        PROCEDURE DIVISION.
@@ -73,10 +70,24 @@
 
            PERFORM UNTIL WS-FOUND-FLAG = "Y"
                OR WS-EOF-FLAG = "Y"
-               READ TRANSACTION-FILE INTO WS-TXN-PARSE
+               *> Read into raw buffer
+               READ TRANSACTION-FILE INTO WS-TXN-RAW-RECORD
                AT END
                    MOVE "Y" TO WS-EOF-FLAG
                NOT AT END
+                   *> Split by pipe
+                   UNSTRING WS-TXN-RAW-RECORD
+                       DELIMITED BY "|"
+                       INTO WS-TP-TXN-ID
+                            WS-TP-USER-ID
+                            WS-TP-MERCHANT-ID
+                            WS-TP-AMOUNT
+                            WS-TP-STATUS
+                            WS-TP-TYPE
+                            WS-TP-QR-CODE
+                            WS-TP-CREATED-AT
+                   END-UNSTRING
+
                    IF FUNCTION TRIM(WS-TP-TXN-ID) =
                       FUNCTION TRIM(WS-INPUT-TXN-ID)
                        MOVE "Y" TO WS-FOUND-FLAG
