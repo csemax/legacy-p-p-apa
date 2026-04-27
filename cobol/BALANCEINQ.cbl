@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. BALANCEINQ.
        AUTHOR. SEVEN-DEADLY-SYNCS.
 
@@ -29,18 +29,19 @@
        01  WS-JSON-OUTPUT          PIC X(1000).
        01  WS-RANDOM-NUM           PIC 9(5).
 
+       *> Added this to hold the raw, unparsed line from the file
+       01  WS-ACC-RAW-RECORD       PIC X(200).
+
+       *> Kept your parse structure, but removed the FILLERs since 
+       *> UNSTRING doesn't need them to absorb the pipes.
        01  WS-ACC-PARSE.
            05  WS-AP-USER-ID       PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-AP-ACC-ID        PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-AP-NAME          PIC X(50).
-           05  FILLER              PIC X(1).
            05  WS-AP-BALANCE-STR   PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-AP-CURRENCY      PIC X(3).
-           05  FILLER              PIC X(1).
            05  WS-AP-STATUS        PIC X(10).
+           05  WS-AP-DATE          PIC X(10). *> Added to capture the date field at the end of your file
 
        PROCEDURE DIVISION.
 
@@ -75,10 +76,23 @@
 
            PERFORM UNTIL WS-FOUND-FLAG = "Y"
                OR WS-EOF-FLAG = "Y"
-               READ ACCOUNT-FILE INTO WS-ACC-PARSE
+               *> Read into the RAW buffer instead of the formatted structure
+               READ ACCOUNT-FILE INTO WS-ACC-RAW-RECORD
                AT END
                    MOVE "Y" TO WS-EOF-FLAG
                NOT AT END
+                   *> Split the raw record by the pipe character
+                   UNSTRING WS-ACC-RAW-RECORD
+                       DELIMITED BY "|"
+                       INTO WS-AP-USER-ID
+                            WS-AP-ACC-ID
+                            WS-AP-NAME
+                            WS-AP-BALANCE-STR
+                            WS-AP-CURRENCY
+                            WS-AP-STATUS
+                            WS-AP-DATE
+                   END-UNSTRING
+
                    IF FUNCTION TRIM(WS-AP-USER-ID) =
                       FUNCTION TRIM(WS-INPUT-USER-ID)
                        MOVE "Y" TO WS-FOUND-FLAG
