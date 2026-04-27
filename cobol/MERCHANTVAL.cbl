@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. MERCHANTVAL.
        AUTHOR. SEVEN-DEADLY-SYNCS.
 
@@ -28,17 +28,16 @@
        01  WS-EOF-FLAG             PIC X VALUE "N".
        01  WS-JSON-OUTPUT          PIC X(1000).
 
+       *> Buffer for raw file read
+       01  WS-MER-RAW-RECORD       PIC X(300).
+
+       *> Removed FILLERs for UNSTRING
        01  WS-MER-PARSE.
            05  WS-MP-MER-ID        PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-MP-NAME          PIC X(100).
-           05  FILLER              PIC X(1).
            05  WS-MP-CATEGORY      PIC X(50).
-           05  FILLER              PIC X(1).
            05  WS-MP-STATUS        PIC X(10).
-           05  FILLER              PIC X(1).
            05  WS-MP-BANK-CODE     PIC X(10).
-           05  FILLER              PIC X(1).
            05  WS-MP-ACCOUNT       PIC X(20).
 
        PROCEDURE DIVISION.
@@ -69,10 +68,22 @@
 
            PERFORM UNTIL WS-FOUND-FLAG = "Y"
                OR WS-EOF-FLAG = "Y"
-               READ MERCHANT-FILE INTO WS-MER-PARSE
+               *> Read into raw buffer
+               READ MERCHANT-FILE INTO WS-MER-RAW-RECORD
                AT END
                    MOVE "Y" TO WS-EOF-FLAG
                NOT AT END
+                   *> Split by pipe
+                   UNSTRING WS-MER-RAW-RECORD
+                       DELIMITED BY "|"
+                       INTO WS-MP-MER-ID
+                            WS-MP-NAME
+                            WS-MP-CATEGORY
+                            WS-MP-STATUS
+                            WS-MP-BANK-CODE
+                            WS-MP-ACCOUNT
+                   END-UNSTRING
+
                    IF FUNCTION TRIM(WS-MP-MER-ID) =
                       FUNCTION TRIM(WS-INPUT-MERCHANT-ID)
                        MOVE "Y" TO WS-FOUND-FLAG
