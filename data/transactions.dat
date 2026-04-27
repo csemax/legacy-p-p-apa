@@ -1,1 +1,4 @@
-
+txn-001|user-001|merchant-001|50000.00|success|QRIS|QR001|2026-01-01T10:00:00
+txn-002|user-002|merchant-002|125000.00|success|QRIS|QR002|2026-01-01T11:00:00
+txn-003|user-001|merchant-003|75000.00|pending|QRIS|QR003|2026-01-01T12:00:00
+txn-004|user-003|merchant-001|200000.00|failed|QRIS|QR004|2026-01-01T13:00:00
