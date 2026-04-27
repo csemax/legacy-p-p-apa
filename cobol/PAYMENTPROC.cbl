@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. PAYMENTPROC.
        AUTHOR. SEVEN-DEADLY-SYNCS.
 
@@ -62,30 +62,27 @@
        01  WS-ACC-EOF              PIC X VALUE "N".
        01  WS-MER-EOF              PIC X VALUE "N".
 
+       *> Added buffers for raw file lines
+       01  WS-ACC-RAW-RECORD       PIC X(200).
+       01  WS-MER-RAW-RECORD       PIC X(300).
+
+       *> Removed FILLERs, structure ready for UNSTRING
        01  WS-ACC-PARSE.
            05  WS-AP-USER-ID       PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-AP-ACC-ID        PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-AP-NAME          PIC X(50).
-           05  FILLER              PIC X(1).
            05  WS-AP-BALANCE-STR   PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-AP-CURRENCY      PIC X(3).
-           05  FILLER              PIC X(1).
            05  WS-AP-STATUS        PIC X(10).
+           05  WS-AP-DATE          PIC X(10).
 
+       *> Removed FILLERs, structure ready for UNSTRING
        01  WS-MER-PARSE.
            05  WS-MP-MER-ID        PIC X(20).
-           05  FILLER              PIC X(1).
            05  WS-MP-NAME          PIC X(100).
-           05  FILLER              PIC X(1).
            05  WS-MP-CATEGORY      PIC X(50).
-           05  FILLER              PIC X(1).
            05  WS-MP-STATUS        PIC X(10).
-           05  FILLER              PIC X(1).
            05  WS-MP-BANK-CODE     PIC X(10).
-           05  FILLER              PIC X(1).
            05  WS-MP-ACCOUNT       PIC X(20).
 
        01  WS-AP-BALANCE           PIC 9(13)V99.
@@ -223,10 +220,23 @@
            MOVE "N" TO WS-ACC-EOF
 
            PERFORM UNTIL WS-ACC-FOUND = "Y" OR WS-ACC-EOF = "Y"
-               READ ACCOUNT-FILE INTO WS-ACC-PARSE
+               *> Read into RAW buffer
+               READ ACCOUNT-FILE INTO WS-ACC-RAW-RECORD
                AT END
                    MOVE "Y" TO WS-ACC-EOF
                NOT AT END
+                   *> Split by pipe
+                   UNSTRING WS-ACC-RAW-RECORD
+                       DELIMITED BY "|"
+                       INTO WS-AP-USER-ID
+                            WS-AP-ACC-ID
+                            WS-AP-NAME
+                            WS-AP-BALANCE-STR
+                            WS-AP-CURRENCY
+                            WS-AP-STATUS
+                            WS-AP-DATE
+                   END-UNSTRING
+                   
                    IF FUNCTION TRIM(WS-AP-USER-ID) =
                       FUNCTION TRIM(WS-IN-USER-ID)
                        MOVE "Y" TO WS-ACC-FOUND
@@ -247,10 +257,22 @@
            MOVE "N" TO WS-MER-EOF
 
            PERFORM UNTIL WS-MER-FOUND = "Y" OR WS-MER-EOF = "Y"
-               READ MERCHANT-FILE INTO WS-MER-PARSE
+               *> Read into RAW buffer
+               READ MERCHANT-FILE INTO WS-MER-RAW-RECORD
                AT END
                    MOVE "Y" TO WS-MER-EOF
                NOT AT END
+                   *> Split by pipe
+                   UNSTRING WS-MER-RAW-RECORD
+                       DELIMITED BY "|"
+                       INTO WS-MP-MER-ID
+                            WS-MP-NAME
+                            WS-MP-CATEGORY
+                            WS-MP-STATUS
+                            WS-MP-BANK-CODE
+                            WS-MP-ACCOUNT
+                   END-UNSTRING
+
                    IF FUNCTION TRIM(WS-MP-MER-ID) =
                       FUNCTION TRIM(WS-IN-MERCHANT-ID)
                        MOVE "Y" TO WS-MER-FOUND
