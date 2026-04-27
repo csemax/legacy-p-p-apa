@@ -1,1 +1,10 @@
-
+merchant-001|Warung Makan Sederhana|Food & Beverage|active|CIMB|mer-acc-001
+merchant-002|Toko Elektronik Maju|Electronics|active|BCA|mer-acc-002
+merchant-003|Apotek Sehat Selalu|Healthcare|active|CIMB|mer-acc-003
+merchant-004|Minimarket Berkah|Retail|active|MANDIRI|mer-acc-004
+merchant-005|Bengkel Motor Jaya|Automotive|active|BNI|mer-acc-005
+merchant-006|Kafe Kopi Nusantara|Food & Beverage|active|CIMB|mer-acc-006
+merchant-007|Salon Cantik Indah|Beauty|inactive|BCA|mer-acc-007
+merchant-008|Toko Buku Pintar|Education|active|CIMB|mer-acc-008
+merchant-009|Laundry Bersih|Services|active|MANDIRI|mer-acc-009
+merchant-010|Supermarket Hemat|Retail|active|CIMB|mer-acc-010
