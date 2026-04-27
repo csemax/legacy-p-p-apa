@@ -13,32 +13,29 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Buat direktori
-RUN mkdir -p /app/cobol/COPYBOOKS \
+RUN mkdir -p /app/cobol \
              /app/data \
              /app/bin \
              /app/api-wrapper
 
 WORKDIR /app
 
-# Salin copybooks
-COPY cobol/COPYBOOKS/ /app/cobol/COPYBOOKS/
+# Salin data files
+COPY data/ /app/data/
 
-# Salin dan kompilasi program COBOL
+# Salin COBOL programs
 COPY cobol/BALANCEINQ.cbl  /app/cobol/
 COPY cobol/PAYMENTPROC.cbl /app/cobol/
 COPY cobol/TXNSTATUS.cbl   /app/cobol/
 COPY cobol/MERCHANTVAL.cbl /app/cobol/
 
 # Kompilasi semua COBOL program
-RUN cd /app/cobol && \
-    cobc -x -o /app/bin/BALANCEINQ BALANCEINQ.cbl && \
-    cobc -x -o /app/bin/PAYMENTPROC PAYMENTPROC.cbl && \
-    cobc -x -o /app/bin/TXNSTATUS TXNSTATUS.cbl && \
-    cobc -x -o /app/bin/MERCHANTVAL MERCHANTVAL.cbl && \
+# Tidak perlu copybook karena sudah di-embed langsung
+RUN cobc -x -free -o /app/bin/BALANCEINQ /app/cobol/BALANCEINQ.cbl && \
+    cobc -x -free -o /app/bin/PAYMENTPROC /app/cobol/PAYMENTPROC.cbl && \
+    cobc -x -free -o /app/bin/TXNSTATUS /app/cobol/TXNSTATUS.cbl && \
+    cobc -x -free -o /app/bin/MERCHANTVAL /app/cobol/MERCHANTVAL.cbl && \
     echo "Semua COBOL program berhasil dikompilasi"
-
-# Salin data files
-COPY data/ /app/data/
 
 # Salin API wrapper
 COPY api-wrapper/server.py /app/api-wrapper/
